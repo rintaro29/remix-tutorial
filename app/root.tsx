@@ -1,4 +1,4 @@
-import type { LinksFunction } from "@remix-run/node";
+import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
 // existing imports
 import { createEmptyContact, getContacts } from "./data";
 import appStylesHref from "./app.css";
@@ -14,16 +14,25 @@ import {
   ScrollRestoration,
   useLoaderData,
   useNavigation,
+  useSubmit,
 } from "@remix-run/react";
+import { useEffect, useState } from "react";
 export const links: LinksFunction = () => [{ rel: "stylesheet", href: appStylesHref }];
 //下のLinksコンポーネントで表示されるリンクを追加することができる
 
 //サーバー側で実行される
-export const loader = async () => {
-  const contacts = await getContacts();
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const url = new URL(request.url);
+  const q = url.searchParams.get("q");
+  const contacts = await getContacts(q);
 
-  return json({ contacts });
+  return json({ contacts, q });
 };
+// export const loader = async () => {
+//   const contacts = await getContacts();
+//   return json({ contacts });
+// };
+
 //サーバー側で実行される
 export const action = async () => {
   const contact = await createEmptyContact();
@@ -31,8 +40,23 @@ export const action = async () => {
 };
 
 export default function App() {
-  const { contacts } = useLoaderData<typeof loader>();
+  const { contacts, q } = useLoaderData<typeof loader>();
   const navigation = useNavigation();
+  const submit = useSubmit();
+
+  const [query, setQuery] = useState(q || "");
+  // useEffect(() => {
+  //   const searchField = document.getElementById("q");
+  //   if (searchField instanceof HTMLInputElement) {
+  //     searchField.value = q || "";
+  //   }
+  // }, [q]);
+
+  // we still have a `useEffect` to synchronize the query
+  // to the component state on back/forward button clicks
+  useEffect(() => {
+    setQuery(q || "");
+  }, [q]);
   return (
     <html lang="en">
       <head>
@@ -45,8 +69,19 @@ export default function App() {
         <div id="sidebar">
           <h1>Remix Contacts</h1>
           <div>
-            <Form id="search-form" role="search">
-              <input id="q" aria-label="Search contacts" placeholder="Search" type="search" name="q" />
+            <Form id="search-form" onChange={(event) => submit(event.currentTarget)} role="search">
+              <input
+                id="q"
+                aria-label="Search contacts"
+                defaultValue={q || ""}
+                placeholder="Search"
+                type="search"
+                name="q"
+                // synchronize user's input to component state
+                onChange={(event) => setQuery(event.currentTarget.value)}
+                // switched to `value` from `defaultValue`
+                value={query}
+              />
               <div id="search-spinner" aria-hidden hidden={true} />
             </Form>
             <Form method="post">
