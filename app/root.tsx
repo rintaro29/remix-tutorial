@@ -79,9 +79,12 @@ export default function App() {
                 placeholder="Search"
                 type="search"
                 name="q"
-                // synchronize user's input to component state
-                onChange={(event) => setQuery(event.currentTarget.value)}
-                // switched to `value` from `defaultValue`
+                onChange={(event) => {
+                  const isFirstSearch = q === null;
+                  submit(event.currentTarget, {
+                    replace: !isFirstSearch,
+                  });
+                }}
                 value={query}
               />
               <div id="search-spinner" aria-hidden hidden={!searching} />
