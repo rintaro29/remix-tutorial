@@ -1,15 +1,14 @@
 import type { LinksFunction } from "@remix-run/node";
 // existing imports
-
+import { createEmptyContact, getContacts } from "./data";
 import appStylesHref from "./app.css";
 import { json } from "@remix-run/node";
-import { getContacts } from "./data";
 import {
   Form,
-  Link,
   Links,
   LiveReload,
   Meta,
+  NavLink,
   Outlet,
   Scripts,
   ScrollRestoration,
@@ -22,6 +21,11 @@ export const links: LinksFunction = () => [{ rel: "stylesheet", href: appStylesH
 export const loader = async () => {
   const contacts = await getContacts();
   return json({ contacts });
+};
+//サーバー側で実行される
+export const action = async () => {
+  const contact = await createEmptyContact();
+  return json({ contact });
 };
 
 export default function App() {
@@ -51,7 +55,10 @@ export default function App() {
               <ul>
                 {contacts.map((contact) => (
                   <li key={contact.id}>
-                    <Link to={`contacts/${contact.id}`}>
+                    <NavLink
+                      className={({ isActive, isPending }) => (isActive ? "active" : isPending ? "pending" : "")}
+                      to={`contacts/${contact.id}`}
+                    >
                       {contact.first || contact.last ? (
                         <>
                           {contact.first} {contact.last}
@@ -60,7 +67,7 @@ export default function App() {
                         <i>No Name</i>
                       )}{" "}
                       {contact.favorite ? <span>★</span> : null}
-                    </Link>
+                    </NavLink>
                   </li>
                 ))}
               </ul>
