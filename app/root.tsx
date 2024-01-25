@@ -1,11 +1,11 @@
-import {
-  Form,
-  Links,
-  LiveReload,
-  Meta,
-  Scripts,
-  ScrollRestoration,
-} from "@remix-run/react";
+import type { LinksFunction } from "@remix-run/node";
+// existing imports
+
+import appStylesHref from "./app.css";
+
+import { Form, Link, Links, LiveReload, Meta, Outlet, Scripts, ScrollRestoration } from "@remix-run/react";
+export const links: LinksFunction = () => [{ rel: "stylesheet", href: appStylesHref }];
+//下のLinksコンポーネントで表示されるリンクを追加することができる
 
 export default function App() {
   return (
@@ -21,13 +21,7 @@ export default function App() {
           <h1>Remix Contacts</h1>
           <div>
             <Form id="search-form" role="search">
-              <input
-                id="q"
-                aria-label="Search contacts"
-                placeholder="Search"
-                type="search"
-                name="q"
-              />
+              <input id="q" aria-label="Search contacts" placeholder="Search" type="search" name="q" />
               <div id="search-spinner" aria-hidden hidden={true} />
             </Form>
             <Form method="post">
@@ -37,13 +31,16 @@ export default function App() {
           <nav>
             <ul>
               <li>
-                <a href={`/contacts/1`}>Your Name</a>
+                <Link to={`/contacts/1`}>Your Name</Link>
               </li>
               <li>
-                <a href={`/contacts/2`}>Your Friend</a>
+                <Link to={`/contacts/2`}>Your Friend</Link>
               </li>
             </ul>
           </nav>
+        </div>
+        <div id="detail">
+          <Outlet />
         </div>
 
         <ScrollRestoration />
